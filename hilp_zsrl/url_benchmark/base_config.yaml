@@ -1,0 +1,26 @@
+defaults:
+  - _self_
+  - workspace_config
+  - agent: ddpg
+  - override hydra/launcher: submitit_slurm
+
+hydra:
+  run:
+    dir: ./exp_local/${run_group}/sd${seed}.${oc.env:SLURM_JOB_ID,}.${oc.env:SLURM_PROCID,}.${now:%Y%m%d%H%M%S}.E${task}.M${agent.name}_${experiment}
+  sweep:
+    dir: ./exp_paper/${now:%Y.%m.%d}_${task}/${now:%H%M%S}_${agent.name}_${task}_${experiment}
+    subdir: ${hydra.job.num}
+  launcher:
+    timeout_min: 4300
+    cpus_per_task: 10
+    gpus_per_node: 1
+    tasks_per_node: 1
+    mem_gb: 400
+    nodes: 1
+    submitit_folder: ./exp_paper/${now:%Y.%m.%d}_${task}/${now:%H%M%S}_${agent.name}_${task}_${experiment}/.slurm
+    partition: learnlab # devlab learnlab
+
+
+
+# dir: ./exp_sweep/${now:%Y.%m.%d}/${now:%H%M%S}_${agent.name}_${agent.feature_learner}_${task}_${experiment}
+#     submitit_folder: ./exp_sweep/${now:%Y.%m.%d}/${now:%H%M%S}_${agent.name}_${agent.feature_learner}_${task}_${experiment}/.slurm

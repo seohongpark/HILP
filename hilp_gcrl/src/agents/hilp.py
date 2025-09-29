@@ -119,6 +119,8 @@ def compute_skill_actor_loss(agent, batch, network_params):
 def loss_fn(network_params, agent, batch):
     info = {}
 
+    rng = agent.rng
+
     # GCVF
     value_loss, value_info = compute_value_loss(agent, batch, network_params)
     for k, v in value_info.items():
@@ -126,9 +128,10 @@ def loss_fn(network_params, agent, batch):
 
     # Skill policy
     batch_size = batch['observations'].shape[0]
+    rng, skill_rng = jax.random.split(rng)
     batch['phis'] = agent.network(batch['observations'], method='phi')
     batch['next_phis'] = agent.network(batch['next_observations'], method='phi')
-    random_skills = np.random.randn(batch_size, agent.config['skill_dim'])
+    random_skills = jax.random.normal(skill_rng, (batch_size, agent.config['skill_dim']))
     batch['skills'] = random_skills / jnp.linalg.norm(random_skills, axis=1, keepdims=True)
     batch['rewards'] = ((batch['next_phis'] - batch['phis']) * batch['skills']).sum(axis=1)
 
@@ -168,8 +171,9 @@ class HILPAgent(flax.struct.PyTreeNode):
         params['networks_target_value'] = new_target_params
         params['networks_skill_target_critic'] = new_skill_target_params
         new_network = new_network.replace(params=freeze(params))
+        new_rng, _ = jax.random.split(agent.rng)
 
-        return agent.replace(network=new_network), info
+        return agent.replace(network=new_network, rng=new_rng), info
     update = jax.jit(update)
 
     def get_loss_info(agent, batch):

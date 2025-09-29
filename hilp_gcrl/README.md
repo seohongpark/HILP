@@ -36,6 +36,13 @@ python dataset_render.py --env_name kitchen-partial-v0
 python main.py --run_group EXP --agent_name hilp --algo_name hilp --seed 0 --env_name visual-kitchen-partial-v0 --train_steps 500000 --eval_interval 50000 --save_interval 500000 --expectile 0.7 --skill_expectile 0.7 --batch_size 256 --encoder impala_small --p_aug 0.5
 ```
 
+## Issues
+
+* (Added on 2025-09-29, reported by [@qortmdgh4141](https://github.com/qortmdgh4141))
+The original implementation has an issue where the agent uses the same set of (batch-sized) random skills during training when JIT is enabled.
+This issue has been fixed in the `master` branch.
+However, the results in the paper were obtained using the original implementation, and we provide the original code in the `reproduce` branch for reproducibility.
+
 ## License
 
 MIT
